@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#form-text{
+display:flex;
+padding:8px;
+}
+#form-text p{
+padding:8px;
+}
+#text-block{
+flex-grow:4;
+}
+#form-text textarea{
+width:100%;
+min-height:320px;
+}
+#form-text input{
+padding:32px;
+}
+#text-blocks section{
+display:flex;
+border:1px solid #666;
+margin-bottom:8px;
+}
+#text-blocks section p{
+padding:16px;
+}
+#text-blocks section p.text{
+flex-grow:4;
+}
+#text-blocks input{
+padding:32px;
+}
+</style>
+
+<script>
+//let SERVER = "192.168.0.105";
+let SERVER = "localhost";
+let PORT = 3330;
+
+const socket = new WebSocket("ws://"+SERVER+":"+PORT);
+
+socket.addEventListener("open", (event) => {
+	console.log("Connection Opened");
+	let msg = { id : "client", action: "connect"};
+	socket.send(JSON.stringify(msg));
+});
+
+// Listen for messages
+socket.addEventListener("message", (event) => {
+	console.log("Message from server ", event.data);
+});
+
+document.addEventListener("DOMContentLoaded", function (event) {
+	let parse = document.getElementById("parse-text");
+
+	parse.addEventListener("click", function (event) {
+		let text = document.getElementById("text").value;
+
+		let texts = text.split(/\r?\n/);
+
+		let text_blocks = document.getElementById("text-blocks");
+
+		text_blocks.innerHTML = "";
+
+		let index = 0;
+		let counter = 0;
+		for (let counter = 0; counter < texts.length; counter++){
+			if (texts[counter].trim() == "")
+				continue;
+
+			index++;
+
+			let text_section = document.createElement("section");
+
+			let text_paragraph = document.createElement("p");
+			text_paragraph.setAttribute("id", "text-"+counter);
+			text_paragraph.setAttribute("class", "text");
+
+			text_section.appendChild(text_paragraph);
+
+			let text_block = document.createTextNode(texts[counter]);
+			text_paragraph.appendChild(text_block);
+
+			let text_button = document.createElement("input");
+			text_button.setAttribute("type", "button");
+			text_button.setAttribute("value", ">>>");
+
+			let text_button_paragraph = document.createElement("p");
+
+			text_button_paragraph.appendChild(text_button);
+
+			text_section.appendChild(text_button_paragraph);
+
+
+			text_button.addEventListener("click", function(event){
+				let msg = { id : "client", action: "prompt", msg: texts[counter]};
+
+				socket.send(JSON.stringify(msg));
+			});
+
+			text_blocks.appendChild(text_section);
+		}
+	});
+});
+</script>
+</head>
+<body>
+<form id="form-text">
+<p id="text-block"><textarea id="text">
+uno uno uno uno uno uno uno uno uno uno uno uno uno 
+
+dos dos dos dos dos dos dos dos dos dos dos dos dos dos dos 
+
+tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres 
+</textarea></p>
+<p><input type="button" id="parse-text" value="Prompt it!" /></p>
+</form>
+
+<article id="text-blocks">
+</article>
+</body>
+</html>
