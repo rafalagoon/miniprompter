@@ -1,0 +1,38 @@
+{
+  "name": "miniprompter",
+  "version": "1.0.0",
+  "description": "A Minimal Teleprompter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafalagoon/miniprompter.git"
+  },
+  "keywords": [
+    "teleprompter",
+    "tele",
+    "prompter",
+    "prompter",
+    "miniprompter",
+    "rafalagoon",
+    "rafa",
+    "lagoon",
+    "rafalaguna",
+    "rafa",
+    "laguna",
+    "youtube",
+    "twitch",
+    "camera"
+  ],
+  "author": "Rafa Laguna",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/rafalagoon/miniprompter/issues"
+  },
+  "homepage": "https://github.com/rafalagoon/miniprompter#readme",
+  "dependencies": {
+    "ws": "^8.14.2"
+  }
+}
