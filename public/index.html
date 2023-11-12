@@ -36,8 +36,7 @@ padding:32px;
 </style>
 
 <script>
-//let SERVER = "192.168.0.105";
-let SERVER = "localhost";
+let SERVER = window.location.hostname;
 let PORT = 3330;
 
 const socket = new WebSocket("ws://"+SERVER+":"+PORT);
@@ -54,10 +53,16 @@ socket.addEventListener("message", (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", function (event) {
+	let last_text = localStorage.getItem("last_text");
+	if (last_text != null && last_text != "")
+		document.getElementById("text").value = last_text;
+
 	let parse = document.getElementById("parse-text");
 
 	parse.addEventListener("click", function (event) {
 		let text = document.getElementById("text").value;
+
+		localStorage.setItem("last_text", text);
 
 		let texts = text.split(/\r?\n/);
 
@@ -110,11 +115,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 <body>
 <form id="form-text">
 <p id="text-block"><textarea id="text">
-uno uno uno uno uno uno uno uno uno uno uno uno uno 
-
-dos dos dos dos dos dos dos dos dos dos dos dos dos dos dos 
-
-tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres tres 
 </textarea></p>
 <p><input type="button" id="parse-text" value="Prompt it!" /></p>
 </form>
