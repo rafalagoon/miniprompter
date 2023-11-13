@@ -3,10 +3,28 @@
 const http = require("http");
 const path = require("path");
 const fs = require("fs");
+const os = require('os');
 
 const { WebSocketServer } = require("ws");
 
 const PORT = 3330;
+
+
+
+let interfaces = os.networkInterfaces();
+let addresses = [];
+for (let i in interfaces) {
+    for (let j in interfaces[i]) {
+        let address = interfaces[i][j];
+        if (address.family === 'IPv4' && !address.internal) {
+            addresses.push(address.address);
+        }
+    }
+}
+
+if (addresses.length > 0){
+	console.log("Your IP: "+addresses[0]);
+}
 
 const http_server = http.createServer((req, res) => {
 	if (req.url == "/favicon.ico")
@@ -33,7 +51,9 @@ const http_server = http.createServer((req, res) => {
             }
         });
     });
-}).listen(PORT);
+}).listen(PORT, function (){
+	console.log("Listening port: "+PORT);
+});
 
 
 const ws_server = new WebSocketServer({ server: http_server });
