@@ -17,8 +17,10 @@ A Minimal Teleprompter
 > $ node install
 4. Execute the server
 > $ node index.js
-5. On the device you want to use to control the prompter, open the web browser and write:
+5. On the device that you are goint to use to control the prompter, open the web browser and write:
 > http://SERVER_IP:SERVER_PORT
-SERVER_IP and SERVER_PORT are shown on the server console
+> *SERVER_IP and SERVER_PORT are shown on the server console*
 6. On the device that you are going to use as a prompter, open the web browser and write:
->http://SERVER_IP:SERVER_PORT/prompter.html
+> http://SERVER_IP:SERVER_PORT/prompter.html
+
+## How to use it
