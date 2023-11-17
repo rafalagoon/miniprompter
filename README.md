@@ -19,7 +19,8 @@ A Minimal Teleprompter
 > $ node index.js
 5. On the device that you are goint to use to control the prompter, open the web browser and write:
 > http://SERVER_IP:SERVER_PORT
-> *SERVER_IP and SERVER_PORT are shown on the server console*
+> 
+> *SERVER_IP and SERVER_PORT (default 3330) are shown on the server console*
 6. On the device that you are going to use as a prompter, open the web browser and write:
 > http://SERVER_IP:SERVER_PORT/prompter.html
 
