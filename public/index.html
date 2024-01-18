@@ -1,7 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
+html,body{
+margin:0;
+padding:0;
+min-height:100vh;
+overflow:hidden;
+}
+main{
+display:flex;
+flex-direction:row;
+height:100%;
+}
 #form-text{
 display:flex;
 padding:8px;
@@ -19,6 +33,13 @@ min-height:320px;
 #form-text input{
 padding:32px;
 }
+#text-blocks{
+display:flex;
+flex-direction:column;
+overflow-y:scroll;
+height:38vh;
+flex-grow:1;
+}
 #text-blocks section{
 display:flex;
 border:1px solid #666;
@@ -33,11 +54,31 @@ flex-grow:4;
 #text-blocks input{
 padding:32px;
 }
+aside{
+display:flex;
+flex-direction:column;
+padding:0 8px 8px 8px;
+}
+aside input{
+padding:48px;
+margin-bottom:16px;
+}
 </style>
 
 <script>
+function send_text (text)
+{
+		let msg = { id : "client", action: "prompt", msg: text};
+		console.log(msg);
+
+		socket.send(JSON.stringify(msg));
+}
+
 let SERVER = window.location.hostname;
 let PORT = 3330;
+
+let texts_parsed = [];
+let current_text = 0;
 
 const socket = new WebSocket("ws://"+SERVER+":"+PORT);
 
@@ -78,7 +119,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 			index++;
 
+			texts_parsed.push(texts[counter]);
+
 			let text_section = document.createElement("section");
+			text_section.setAttribute("id", "section-text-"+index);
 
 			let text_paragraph = document.createElement("p");
 			text_paragraph.setAttribute("id", "text-"+counter);
@@ -92,6 +136,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 			let text_button = document.createElement("input");
 			text_button.setAttribute("type", "button");
 			text_button.setAttribute("value", ">>>");
+			text_button.setAttribute("num", counter);
 
 			let text_button_paragraph = document.createElement("p");
 
@@ -103,12 +148,50 @@ document.addEventListener("DOMContentLoaded", function (event) {
 			text_button.addEventListener("click", function(event){
 				let msg = { id : "client", action: "prompt", msg: texts[counter]};
 
+				current_text = counter;
+
 				socket.send(JSON.stringify(msg));
 			});
 
 			text_blocks.appendChild(text_section);
 		}
 	});
+
+	let next_b = document.getElementById("next-button");
+	next_b.addEventListener("click", function(event){
+		current_text++;
+		console.log("click", current_text);
+
+		if (current_text >= texts_parsed.length){
+			current_text = texts_parsed.length - 1;
+			return;
+		}
+
+		let sec = document.querySelector("#section-text-"+current_text);
+		let screen_pos = sec.getBoundingClientRect();
+		console.log(screen_pos);
+
+		let main = document.querySelector("#text-blocks");
+		main.scrollTo(0, screen_pos.y+screen_pos.height);
+
+
+		send_text(texts_parsed[current_text]);
+		console.log("a");
+	});
+
+	let prev_b = document.getElementById("prev-button");
+	prev_b.addEventListener("click", function(event){
+		current_text--;
+		if (current_text < 0){
+			current_text = 0;
+			return;
+		}
+
+		send_text(texts_parsed[current_text]);
+	});
+
+
+
 });
 </script>
 </head>
@@ -118,8 +201,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
 </textarea></p>
 <p><input type="button" id="parse-text" value="Prompt it!" /></p>
 </form>
-
+<main>
 <article id="text-blocks">
 </article>
+<aside>
+<input type="button" id="prev-button" value="Prev"/>
+<input type="button" id="next-button" value="Next"/>
+</aside>
+</main>
 </body>
 </html>
