@@ -29,6 +29,19 @@ text-align:center;
 <script>
 document.documentElement.requestFullscreen();
 
+/*
+let wakeLock = null;
+
+setTimeout( () => {
+	try {
+		wakeLock = navigator.wakeLock.request('screen');
+	}
+	catch (err) {
+		alert("No wakeLock");
+	}
+}, 1000);
+*/
+
 let SERVER = window.location.hostname;
 let PORT = 3330;
 
