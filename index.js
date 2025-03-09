@@ -75,8 +75,8 @@ ws_server.on("connection", function(conn) {
 		}
 		
 		if (message.id == "client"){
-			console.log("Client");
 			if (message.action == "connect"){
+				console.log("Client connect");
 				client_conn = conn;
 				return;
 			}
@@ -84,17 +84,26 @@ ws_server.on("connection", function(conn) {
 			if (message.msg != null)
 				console.log("Client: "+message.msg);
 
+			if (prompt_conn == null){
+				console.log("Prompter not connected");
+				return;
+			}
+
 			prompt_conn.send(data);
 		}
 		else if (message.id == "prompter"){
-			console.log("Prompter");
 			if (message.action == "connect"){
+				console.log("Prompter connect");
 				prompt_conn = conn;
 				return;
 			}
 
+			if (client_conn == null){
+				console.log("Client not connected");
+				return;
+			}
+
 			client_conn.send(data);
-			
 		}
   });
 
