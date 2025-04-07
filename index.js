@@ -9,8 +9,6 @@ const { WebSocketServer } = require("ws");
 
 const PORT = 3330;
 
-
-
 let interfaces = os.networkInterfaces();
 let addresses = [];
 for (let i in interfaces) {
@@ -95,6 +93,10 @@ ws_server.on("connection", function(conn) {
 			if (message.action == "connect"){
 				console.log("Prompter connect");
 				prompt_conn = conn;
+				return;
+			}
+			else if (message.action == "wake_lock"){
+				console.log("Wake Lock:", message.message);
 				return;
 			}
 

@@ -2,11 +2,18 @@
 <html>
 <head>
 <style>
+@font-face {
+font-family: NotoSansMono;
+src: url(ttf/NotoSansMono-SemiBold.ttf);
+}
 html,body{
 background-color:#000;
 color:#fff;
-font-family:sans-serif;
+font-family: NotoSansMono, Arial, sans-serif;
 padding:0;
+}
+body{
+min-height:320px;
 }
 #prompt{
 -moz-transform:    scaleX(-1); /* Gecko */
@@ -15,8 +22,8 @@ padding:0;
 transform:         scaleX(-1); /* Standard */
 filter: FlipH;                 /* IE 6/7/8 */
 
-font-size:4.5em;
-line-height:1.15em;
+font-size:3.7em;
+line-height:1.24em;
 }
 #prompt p{
 margin:0;
@@ -29,18 +36,34 @@ text-align:center;
 <script>
 document.documentElement.requestFullscreen();
 
-/*
-let wakeLock = null;
+function send_message (action, message = "")
+{
+	let msg = { id : "prompter", action: action, message: message };
+	socket.send(JSON.stringify(msg));
+}
 
-setTimeout( () => {
-	try {
-		wakeLock = navigator.wakeLock.request('screen');
-	}
-	catch (err) {
-		alert("No wakeLock");
-	}
-}, 1000);
-*/
+function wake_lock ()
+{
+	// Function that attempts to request a wake lock.
+	const requestWakeLock = async () => {
+		try {
+			wakeLock = await navigator.wakeLock.request('screen');
+				wakeLock.addEventListener('release', () => {
+					console.log('Wake Lock was released');
+					send_message ("wake_lock", "Wake Lock was released");
+				});
+			console.log('Wake Lock is active');
+			send_message ("wake_lock", "Wake Lock is active");
+		}
+		catch (err) {
+			console.error(`${err.name}, ${err.message}`);
+			send_message ("wake_lock", "Wake Lock error");
+		}
+	};
+}
+
+// The wake lock sentinel.
+let wakeLock = null;
 
 let SERVER = window.location.hostname;
 let PORT = 3330;
@@ -49,8 +72,7 @@ const socket = new WebSocket("ws://"+SERVER+":"+PORT);
 
 socket.addEventListener("open", (event) => {
 	console.log("Connection Opened");
-	let msg = { id : "prompter", action: "connect"};
-	socket.send(JSON.stringify(msg));
+	send_message("connect");
 });
 
 socket.addEventListener("message", (event) => {
@@ -67,9 +89,18 @@ socket.addEventListener("message", (event) => {
 		text.innerHTML = "<p>"+message.msg+"</p>";
 	}
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+	document.getElementById("miniprompter").addEventListener("click", (event) => {
+		console.log("Wake?");
+		wake_lock();
+	});
+}, false);
+
+
 </script>
 </head>
-<body>
+<body id="miniprompter">
 <article id="prompt">
 <p class="info">Waiting...</p>
 </article>

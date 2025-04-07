@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+@font-face {
+font-family: NotoSansMono;
+src: url(ttf/NotoSansMono-SemiBold.ttf);
+}
 html,body{
 margin:0;
 padding:0;
@@ -63,18 +67,22 @@ flex-direction:column;
 padding:0 8px 8px 8px;
 }
 aside input{
-padding:48px;
+padding:36px;
 margin-bottom:16px;
 }
 #block-preview{
+font-family: NotoSansMono, Arial, sans-serif;
+min-width:640px;
 width:640px;
 height:400px;
 margin-right:16px;
 background-color:#000;
 color:#fff;
-font-size:49px;
-font-family:sans-serif;
-line-height:1.15em;
+font-size:2.77em;
+line-height:1.16em;
+}
+#clear-button{
+margin-bottom:106px;
 }
 </style>
 
@@ -82,7 +90,6 @@ line-height:1.15em;
 function send_text (text)
 {
 		let msg = { id : "client", action: "prompt", msg: text};
-		//console.log(msg);
 
 		socket.send(JSON.stringify(msg));
 }
@@ -104,7 +111,6 @@ let current_text = -1;
 const socket = new WebSocket("ws://"+SERVER+":"+PORT);
 
 socket.addEventListener("open", (event) => {
-
 	console.log("Connection Opened");
 	let msg = { id : "client", action: "connect"};
 	socket.send(JSON.stringify(msg));
@@ -222,6 +228,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		send_text(texts_parsed[current_text]);
 	});
 
+
+	let clear_b = document.getElementById("clear-button");
+	clear_b.addEventListener("click", function(event){
+		send_text("");
+	});
+
 });
 </script>
 </head>
@@ -238,6 +250,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 <article id="text-blocks">
 </article>
 <aside id="motion-buttons">
+<input type="button" id="clear-button" value="Clear"/>
 <input type="button" id="prev-button" value="Prev"/>
 <input type="button" id="next-button" value="Next"/>
 </aside>
