@@ -323,6 +323,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	document.getElementById("arrow-controls").addEventListener("click", function(event){
 		event.target.blur();
 	});
+	document.getElementById("text").addEventListener("click", function(event){
+		document.getElementById("arrow-controls").checked = false;
+	});
 });
 </script>
 </head>
