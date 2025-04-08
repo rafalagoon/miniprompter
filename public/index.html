@@ -38,9 +38,12 @@ font-size:24px;
 #form-text fieldset{
 display:flex;
 flex-direction:column;
+border:none;
+padding-top:24px;
 }
 #form-text fieldset p{
 padding:0;
+margin:0;
 }
 #form-text legend{
 display:none;
@@ -57,7 +60,7 @@ display:flex;
 flex-direction:column;
 overflow-y:scroll;
 width:520px;
-height:38vh;
+height:42.5vh;
 flex-grow:1;
 }
 #text-blocks section{
@@ -96,7 +99,13 @@ font-size:2.56em;
 line-height:1.16em;
 }
 #clear-button{
-margin-bottom:106px;
+margin-bottom:70px;
+}
+#motion-buttons p {
+margin-bottom:0px;
+}
+#motion-buttons label {
+font-size:12px;
 }
 </style>
 
@@ -193,7 +202,8 @@ function textarea_goto_line (line)
 	let line_h = text_area.clientHeight / text_area.rows;
 	let goto_line = line * line_h;
 
-	text_area.scrollTop = goto_line;
+	// TODO: Enable!!!
+	//text_area.scrollTop = goto_line;
 }
 
 
@@ -202,6 +212,24 @@ function show_preview (text)
 	let preview = document.getElementById("block-preview");
 
 	preview.innerHTML = text;
+}
+
+// FIXME: use arrow_controls only when necessary not at every key
+function arrow_controls (event)
+{
+	if (!document.getElementById("arrow-controls").checked)
+		return;
+	console.log(event);
+	
+	const key = event.key;
+
+	if (key == "ArrowRight") {
+		document.getElementById("next-button").click();
+	}
+	else if (key == "ArrowLeft") {
+		document.getElementById("prev-button").click();
+	}
+
 }
 
 let SERVER = window.location.hostname;
@@ -289,6 +317,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		send_text("");
 	});
 
+
+	document.addEventListener("keydown", arrow_controls);
+
+	document.getElementById("arrow-controls").addEventListener("click", function(event){
+		event.target.blur();
+	});
 });
 </script>
 </head>
@@ -309,6 +343,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 </article>
 <aside id="motion-buttons">
 <input type="button" id="clear-button" value="Clear"/>
+<p><input type="checkbox" id="arrow-controls" /> <label for="arrow-controls">arrow controlled</label></p>
 <input type="button" id="prev-button" value="Prev"/>
 <input type="button" id="next-button" value="Next"/>
 </aside>
