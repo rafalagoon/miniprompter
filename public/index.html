@@ -190,6 +190,9 @@ function parse_text (update = false)
 	if (update){
 		if (current_text >= 0 && current_text < texts_parsed.length){
 			show_preview(texts_parsed[current_text]);
+			textarea_goto_line(texts_parsed_lines[current_text]);
+
+			send_text(texts_parsed[current_text]);
 		}
 	}
 }
