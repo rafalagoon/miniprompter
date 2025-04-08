@@ -35,8 +35,22 @@ width:100%;
 min-height:320px;
 font-size:24px;
 }
+#form-text fieldset{
+display:flex;
+flex-direction:column;
+}
+#form-text fieldset p{
+padding:0;
+}
+#form-text legend{
+display:none;
+}
 #form-text input{
 padding:32px;
+width:128px
+}
+#parse-update-text{
+display:none;
 }
 #text-blocks{
 display:flex;
@@ -95,6 +109,94 @@ function send_text (text)
 }
 
 
+function parse_text (update = false)
+{
+	let text = document.getElementById("text").value;
+
+	localStorage.setItem("last_text", text);
+
+
+	let texts = text.split(/\r?\n/);
+
+	let text_blocks = document.getElementById("text-blocks");
+
+	text_blocks.innerHTML = "";
+
+	texts_parsed = [];
+	texts_parsed_lines = [];
+	if (!update)
+		current_text = -1;
+
+	let index = 0;
+	let counter = 0;
+	for (let counter = 0; counter < texts.length; counter++){
+		if (texts[counter].trim() == "")
+			continue;
+
+		index++;
+
+		texts_parsed.push(texts[counter]);
+		texts_parsed_lines.push(counter);
+
+
+		let text_section = document.createElement("section");
+		text_section.setAttribute("id", "section-text-"+index);
+
+		let text_paragraph = document.createElement("p");
+		text_paragraph.setAttribute("id", "text-"+counter);
+		text_paragraph.setAttribute("class", "text");
+
+		text_section.appendChild(text_paragraph);
+
+		let text_block = document.createTextNode(texts[counter]);
+		text_paragraph.appendChild(text_block);
+
+		let text_button = document.createElement("input");
+		text_button.setAttribute("type", "button");
+		text_button.setAttribute("value", ">>>");
+		text_button.setAttribute("num", counter);
+
+		let text_button_paragraph = document.createElement("p");
+
+		text_button_paragraph.appendChild(text_button);
+
+		text_section.appendChild(text_button_paragraph);
+
+		text_button.text_index = index;
+
+		text_button.addEventListener("click", (event) => {
+			current_text = event.target.text_index - 1;
+
+			console.log("Current Text: ", current_text);
+
+			show_preview(texts_parsed[current_text]);
+			textarea_goto_line(texts_parsed_lines[current_text]);
+
+			send_text(texts_parsed[current_text]);
+		});
+
+		text_blocks.appendChild(text_section);
+	}
+
+	if (update){
+		if (current_text >= 0 && current_text < texts_parsed.length){
+			show_preview(texts_parsed[current_text]);
+		}
+	}
+}
+
+
+// TODO: Get the right line position on the textarea
+function textarea_goto_line (line)
+{
+	let text_area = document.getElementById("text");
+	let line_h = text_area.clientHeight / text_area.rows;
+	let goto_line = line * line_h;
+
+	text_area.scrollTop = goto_line;
+}
+
+
 function show_preview (text)
 {
 	let preview = document.getElementById("block-preview");
@@ -106,6 +208,7 @@ let SERVER = window.location.hostname;
 let PORT = 3330;
 
 let texts_parsed = [];
+let texts_parsed_lines = [];
 let current_text = -1;
 
 const socket = new WebSocket("ws://"+SERVER+":"+PORT);
@@ -127,76 +230,24 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		document.getElementById("text").value = last_text;
 
 	let parse = document.getElementById("parse-text");
+	let parse_update = document.getElementById("parse-update-text");
 
 	parse.addEventListener("click", function (event) {
-		let text = document.getElementById("text").value;
-
-		localStorage.setItem("last_text", text);
-
-
-		let texts = text.split(/\r?\n/);
-
-		let text_blocks = document.getElementById("text-blocks");
-
-		text_blocks.innerHTML = "";
-
-		texts_parsed = [];
-		current_text = -1;
-
-		let index = 0;
-		let counter = 0;
-		for (let counter = 0; counter < texts.length; counter++){
-			if (texts[counter].trim() == "")
-				continue;
-
-			index++;
-
-			texts_parsed.push(texts[counter]);
-
-			let text_section = document.createElement("section");
-			text_section.setAttribute("id", "section-text-"+index);
-
-			let text_paragraph = document.createElement("p");
-			text_paragraph.setAttribute("id", "text-"+counter);
-			text_paragraph.setAttribute("class", "text");
-
-			text_section.appendChild(text_paragraph);
-
-			let text_block = document.createTextNode(texts[counter]);
-			text_paragraph.appendChild(text_block);
-
-			let text_button = document.createElement("input");
-			text_button.setAttribute("type", "button");
-			text_button.setAttribute("value", ">>>");
-			text_button.setAttribute("num", counter);
-
-			let text_button_paragraph = document.createElement("p");
-
-			text_button_paragraph.appendChild(text_button);
-
-			text_section.appendChild(text_button_paragraph);
-
-
-			text_button.addEventListener("click", (event) => {
-				//let msg = { id : "client", action: "prompt", msg: texts[counter]};
-
-				current_text = counter;
-
-				show_preview(texts[counter]);
-
-				//socket.send(JSON.stringify(msg));
-				send_text(texts[counter]);
-
-			});
-
-			text_blocks.appendChild(text_section);
-		}
+		parse_text();
+		parse.style.display = "none";
+		parse_update.style.display = "inline";
 	});
+
+	parse_update.addEventListener("click", function (event) {
+		parse_text(true);
+	});
+
 
 	let next_b = document.getElementById("next-button");
 	next_b.addEventListener("click", function(event){
 		current_text++;
 		//console.log("click", current_text," ",texts_parsed.length);
+		console.log("Next Text: ", current_text);
 
 		if (current_text >= texts_parsed.length){
 			current_text = texts_parsed.length - 1;
@@ -207,6 +258,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		sec.scrollIntoView();
 
 		show_preview(texts_parsed[current_text]);
+		textarea_goto_line(texts_parsed_lines[current_text]);
 
 		send_text(texts_parsed[current_text]);
 		
@@ -223,7 +275,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		let sec = document.querySelector("#section-text-"+(current_text+1));
 		sec.scrollIntoView();
 
+		console.log("Prev Text: ", current_text);
+
 		show_preview(texts_parsed[current_text]);
+		textarea_goto_line(texts_parsed_lines[current_text]);
 
 		send_text(texts_parsed[current_text]);
 	});
@@ -239,9 +294,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
 </head>
 <body>
 <form id="form-text">
-<p id="text-block"><textarea id="text">
-</textarea></p>
-<p><input type="button" id="parse-text" value="Prompt it!" /></p>
+<p id="text-block"><textarea id="text"></textarea></p>
+<fieldset>
+<legend>Actions</legend>
+<p><input type="button" id="parse-text" value="Parse it!" /></p>
+<p><input type="button" id="parse-update-text" value="Update it!" /></p>
+</fieldset>
 </form>
 <main id="main-blocks">
 <aside id="block-preview">
