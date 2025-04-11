@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 
 const http = require("http");
 const path = require("path");
@@ -58,6 +58,7 @@ const ws_server = new WebSocketServer({ server: http_server });
 
 let client_conn;
 let prompt_conn;
+let footer_conn;
 
 ws_server.on("connection", function(conn) {
   console.log("Recieved a new connection.");
@@ -66,6 +67,7 @@ ws_server.on("connection", function(conn) {
 		data = binary ? data : data.toString();
 
 		let message = JSON.parse(data);
+		console.log(message);
 		
 		if (message.id == null){
 			console.log("Error: Message incomplete");
@@ -99,6 +101,25 @@ ws_server.on("connection", function(conn) {
 				console.log("Wake Lock:", message.message);
 				return;
 			}
+
+			if (client_conn == null){
+				console.log("Client not connected");
+				return;
+			}
+
+			client_conn.send(data);
+		}
+		else if (message.id == "footer"){
+			if (message.action == null)
+				return;
+
+			if (message.action == "connect"){
+				console.log("Footer connect");
+				footer_conn = conn;
+				return;
+			}
+
+			console.log("Footer: "+message.action);
 
 			if (client_conn == null){
 				console.log("Client not connected");

@@ -253,6 +253,29 @@ socket.addEventListener("open", (event) => {
 // Listen for messages
 socket.addEventListener("message", (event) => {
 	console.log("Message from server ", event.data);
+
+	if (event.data == null)
+		return;
+
+	let message = JSON.parse(event.data);
+
+	if (message.id == null)
+		return;
+
+	if (message.id == "footer"){
+		if (message.action == null)
+			return;
+
+		if (message.action == "next"){
+			document.getElementById("next-button").click();
+		}
+		else if (message.action == "prev"){
+			document.getElementById("prev-button").click();
+		}
+
+
+	}
+
 });
 
 document.addEventListener("DOMContentLoaded", function (event) {
