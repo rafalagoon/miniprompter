@@ -32,15 +32,9 @@ padding:8px;
 #text-block{
 flex-grow:4;
 }
-#form-text pre{
+#form-text textarea{
 width:100%;
 min-height:320px;
-height:320px;
-overflow:scroll;
-overflow-x:hidden;
-word-wrap:break-word;
-white-space:break-spaces;
-padding:8px;
 font-size:24px;
 }
 #form-text fieldset{
@@ -130,9 +124,6 @@ font-size:12px;
 </style>
 
 <script>
-
-let reloading = false;
-
 function send_text (text)
 {
 		let msg = { id : "client", action: "prompt", msg: text};
@@ -145,22 +136,18 @@ function send_reload ()
 		let msg = { id : "client", action: "reload"};
 
 		socket.send(JSON.stringify(msg));
-
-		reloading = true;
 }
 
 
 
 function parse_text (update = false)
 {
-	let text = document.getElementById("text").innerText;
-	//console.log("Text:", text);
+	let text = document.getElementById("text").value;
 
 	localStorage.setItem("last_text", text);
 
-	let texts = text.split(/\r?\n/);
 
-	//console.log("Texts:", texts);
+	let texts = text.split(/\r?\n/);
 
 	let text_blocks = document.getElementById("text-blocks");
 
@@ -211,10 +198,10 @@ function parse_text (update = false)
 		text_button.addEventListener("click", (event) => {
 			current_text = event.target.text_index - 1;
 
-			//console.log("Current Text:", current_text, "- Current Line:",texts_parsed_lines[current_text]);
+			console.log("Current Text: ", current_text);
 
 			show_preview(texts_parsed[current_text]);
-			textarea_goto_line(texts_parsed[current_text]);
+			textarea_goto_line(texts_parsed_lines[current_text]);
 
 			send_text(texts_parsed[current_text]);
 		});
@@ -225,44 +212,40 @@ function parse_text (update = false)
 	if (update){
 		if (current_text >= 0 && current_text < texts_parsed.length){
 			show_preview(texts_parsed[current_text]);
-			textarea_goto_line(texts_parsed[current_text]);
+			textarea_goto_line(texts_parsed_lines[current_text]);
 
 			send_text(texts_parsed[current_text]);
 		}
 	}
-
-//	console.log(texts_parsed_lines);
 }
 
 
 // TODO: Get the right line position on the textarea
-function textarea_goto_line (text_line)
+function textarea_goto_line (line)
 {
 	let text_area = document.getElementById("text");
+	//let line_h = text_area.clientHeight / text_area.rows;
+	let lines = text_area.value.split("\n");
+	console.log(lines.length);
 
-	let node_stack = text_area.childNodes;
-
-	let line_num = -1;
-	for (let i = 0; i < node_stack.length && line_num == -1; i++){
-		if (node_stack[i].nodeType != Node.TEXT_NODE)
-			continue;
-
-		if (node_stack[i].textContent == text_line)
-			line_num = i;
+	let chars = "";
+	for (let i = 0; i < line; i++){
+		chars += lines[i]+"\n";
 	}
 
-	if (line_num == -1){
-		console.log("Line not found");
-		return;
-	}
+	text_area.selectionStart = chars.length;
+	text_area.selectionEnd = chars.length+1;
 
-	let span_tmp = document.createElement("span");
+	text_area.focus();
 
-	node_stack[line_num].parentNode.insertBefore(span_tmp, node_stack[line_num]);
+	let range = document.selection.createRange();
 
-	span_tmp.scrollIntoView();
+	console.log(range);
 
-	span_tmp.remove();
+	//let goto_line = line * line_h;
+
+	// TODO: Enable!!!
+	//text_area.scrollTop = goto_line;
 }
 
 
@@ -278,7 +261,7 @@ function arrow_controls (event)
 {
 	if (!document.getElementById("arrow-controls").checked)
 		return;
-	//console.log(event);
+	console.log(event);
 	
 	const key = event.key;
 
@@ -318,19 +301,7 @@ socket.addEventListener("message", (event) => {
 	if (message.id == null)
 		return;
 
-	if (message.id == "prompt"){
-		if (message.action == null)
-			return;
-
-		if (message.action == "connected"){
-			if (reloading) {
-				send_text(texts_parsed[current_text]);
-
-				reloading = false;
-			}
-		}
-	}
-	else if (message.id == "footer"){
+	if (message.id == "footer"){
 		if (message.action == null)
 			return;
 
@@ -346,19 +317,8 @@ socket.addEventListener("message", (event) => {
 
 document.addEventListener("DOMContentLoaded", function (event) {
 	let last_text = localStorage.getItem("last_text");
-	//console.log(last_text);
-	if (last_text != null && last_text != ""){
-		document.getElementById("text").innerText = last_text;
-		/*
-		for (let i = 0; i < document.getElementById("text").childNodes.length; i++){
-			//console.log(document.getElementById("text").childNodes[i]);
-			if (document.getElementById("text").childNodes[i].nodeType != Node.TEXT_NODE){
-				document.getElementById("text").childNodes[i] = "\n";
-			}
-		}
-		//console.log(document.getElementById("text").childNodes);
-		*/
-	}
+	if (last_text != null && last_text != "")
+		document.getElementById("text").value = last_text;
 
 	let parse = document.getElementById("parse-text");
 	let parse_update = document.getElementById("parse-update-text");
@@ -378,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	next_b.addEventListener("click", function(event){
 		current_text++;
 		//console.log("click", current_text," ",texts_parsed.length);
-		//console.log("Next Text: ", current_text, "- Next Line:",texts_parsed_lines[current_text]);
+		console.log("Next Text: ", current_text);
 
 		if (current_text >= texts_parsed.length){
 			current_text = texts_parsed.length - 1;
@@ -389,7 +349,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		sec.scrollIntoView();
 
 		show_preview(texts_parsed[current_text]);
-		textarea_goto_line(texts_parsed[current_text]);
+		textarea_goto_line(texts_parsed_lines[current_text]);
 
 		send_text(texts_parsed[current_text]);
 		
@@ -406,10 +366,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		let sec = document.querySelector("#section-text-"+(current_text+1));
 		sec.scrollIntoView();
 
-		//console.log("Prev Text: ", current_text);
+		console.log("Prev Text: ", current_text);
 
 		show_preview(texts_parsed[current_text]);
-		textarea_goto_line(texts_parsed[current_text]);
+		textarea_goto_line(texts_parsed_lines[current_text]);
 
 		send_text(texts_parsed[current_text]);
 	});
@@ -440,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 </head>
 <body>
 <form id="form-text">
-<p id="text-block"><pre id="text" contenteditable="plaintext-only"></pre></p>
+<p id="text-block"><textarea id="text"></textarea></p>
 <fieldset>
 <legend>Actions</legend>
 <p><input type="button" id="parse-text" value="Parse it!" /></p>

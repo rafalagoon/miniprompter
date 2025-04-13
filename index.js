@@ -95,6 +95,11 @@ ws_server.on("connection", function(conn) {
 			if (message.action == "connect"){
 				console.log("Prompter connect");
 				prompt_conn = conn;
+
+				if (client_conn != null){
+					let prompt_notice = {"id":"prompt", "action": "connected"}
+					client_conn.send(JSON.stringify(prompt_notice));
+				}
 				return;
 			}
 			else if (message.action == "wake_lock"){

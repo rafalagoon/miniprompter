@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, initial-scale=1" />
+
 <title>MiniPrompter</title>
 <style>
 @font-face {
@@ -23,8 +26,11 @@ min-height:320px;
 transform:         scaleX(-1); /* Standard */
 filter: FlipH;                 /* IE 6/7/8 */
 
-font-size:3.7em;
+
+/*font-size:3.7em;*/
+font-size:60px;
 line-height:1.24em;
+/*line-height:36px;*/
 }
 #prompt p{
 margin:0;
@@ -36,6 +42,17 @@ text-align:center;
 </style>
 <script>
 document.documentElement.requestFullscreen();
+
+/*
+setTimeout(function(){
+	let win_w = window.innerWidth;
+	let win_h = window.innerHeight;
+
+	let debug_info = document.getElementById("debug-info");	
+
+	debug_info.innerHTML = "Window Size: "+win_w+"x"+win_h; 
+}, 3000);
+*/
 
 function send_message (action, message = "")
 {
@@ -87,7 +104,14 @@ socket.addEventListener("message", (event) => {
 	}
 
 	if (message.action == "prompt"){
+		let msg = message.msg;
+		if (msg == null)
+			msg = "";
+
 		text.innerHTML = "<p>"+message.msg+"</p>";
+	}
+	else if (message.action == "reload"){
+		window.location.reload();
 	}
 });
 
@@ -104,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <body id="miniprompter">
 <article id="prompt">
 <p class="info">Waiting...</p>
+<p id="debug-info" class="info"></p>
 </article>
 </body>
 </html>
