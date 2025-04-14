@@ -135,18 +135,28 @@ let reloading = false;
 
 function send_text (text)
 {
-		let msg = { id : "client", action: "prompt", msg: text};
+	if (!connected)
+		return false;
+	
+	let msg = { id : "client", action: "prompt", msg: text};
 
-		socket.send(JSON.stringify(msg));
+	socket.send(JSON.stringify(msg));
+
+	return true;
 }
 
 function send_reload ()
 {
-		let msg = { id : "client", action: "reload"};
+	if (!connected)
+		return false;
 
-		socket.send(JSON.stringify(msg));
+	let msg = { id : "client", action: "reload"};
 
-		reloading = true;
+	socket.send(JSON.stringify(msg));
+
+	reloading = true;
+
+	return true;
 }
 
 
@@ -294,6 +304,8 @@ function arrow_controls (event)
 let SERVER = window.location.hostname;
 let PORT = 3330;
 
+let connected = false;
+
 let texts_parsed = [];
 let texts_parsed_lines = [];
 let current_text = -1;
@@ -301,6 +313,7 @@ let current_text = -1;
 const socket = new WebSocket("ws://"+SERVER+":"+PORT);
 
 socket.addEventListener("open", (event) => {
+	connected = true;
 	console.log("Connection Opened");
 	let msg = { id : "client", action: "connect"};
 	socket.send(JSON.stringify(msg));
